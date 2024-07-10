@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 정보</title>
+    <!-- Mock server 사용하는 이유
+        백엔드에서 데이터를 주고받기위한 api가 만들어지지 않았을때 
+        프론트에서 데이터를 주고받는것을 테스트하기 위해서 
+        api완성이 주소만 변경하면 됨 
+
+        [ json-server]
+        1.json서버 사용시 id값은 필수 = pk값
+        2.더미데이터 : json generator 로 생성 
+        3.데이터 수정할때마다 자동으로 새로고침된다.
+        4.id가 없으면 json-server가 자동으로 생성해서 넣어준다.
+
+        *구동하기
+        1. cd json-server : json-server로 이동
+        2. json-server --watch db.json : 구동
+        http://localhost:3000/customers : customers에 접근가능
+     -->
+</head>
+<body>
+
+    <button onclick="getData()">조회</button>
+    <button onclick="postData()">생성</button>
+    <button onclick="putData()">수정</button>
+    <!-- <button onclick="deleteData()">삭제</button> -->
+    <button onclick="deleteAllData()">모두삭제</button>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>username</th>
+                <th>password</th>
+                <th>password-again</th>
+                <th>email</th>
+                <th>name</th>
+            </tr>
+        </thead>
+        <!-- 클릭시  -->
+      
+        <tbody id="tbBody">
+
+        </tbody>
+    </table>
+
+
+    <script>
+
+
+// 데이터 변경후 조회해야 보임 
+// 조회
+
+        function getData(){
+            fetch("http://localhost:3000/customers")
+            .then(response => response.json())
+            .then(json=>{
+                const h =[];
+                for(const customer of json){
+                    h.push(`<tr>`);
+                    h.push(`<td>${customer.username}</td>`);
+                    h.push(`<td>${customer.password}</td>`);
+                    h.push(`<td>${customer.password_again}</td>`);
+                    h.push(`<td>${customer.email}</td>`);
+                    h.push(`<td>${customer.name}</td>`);
+                    h.push(`<td class="customer-index">${customer.id}</td>`);
+                    h.push(`<td class="delete-userdata")">삭제</td>`); 
+                    h.push(`<tr>`);
+                }
+                // .join :배열에 있는 문자열을 하나의 string으로 합치기 
+                document.getElementById("tbBody").innerHTML = h.join("");
+            
+
+            
+            })
+        }
+        getData()
+// 생성 : 사용자의 입력 저장
+const username = document.querySelector('#username')
+const password = document.querySelector('#password');
+const password_again = document.querySelector('#password-again');
+const email = document.querySelector('#email');
+const name = document.querySelector('#name');
+
+        function postData(){
+            // name,email외 undefined
+
+            // 사용자에게 입력받은 값을 customer에 저장하기 (지금은 값고정)
+            const customer ={            
+                "username": "Van",          
+                "password": "Apple",
+                "password-again": "spo05@naver.com",
+                "email": "010-1234-1234",
+                "name": "군자",
+            }
+            // 나중에 api주소변경 
+            fetch("http://localhost:3000/customers",{
+                method:"POST",
+                body:JSON.stringify(customer),
+                headers:{
+                    "content-type":"application/json; charset=UTF-8"
+                }
+            })
+            .then(response => response.json())
+            .then((json)=> console.log(json))    
+        }
+// 수정 :사용자 입력을 받아 db데이터 덮어쓰기?
+// 마이페이지에서 회원정보 수정시 : 입력값 받고 로그인시 id값을 받아서 url에 넘겨주기 
+function putData(){
+            // 사용자에게 입력받은 값을 customer에 저장하기 (지금은 값고정)
+            const customer ={            
+                "name": "Van",          
+                "company": "Apple",
+                "email": "spo05@naver.com",
+                "phone": "010-1234-1234",
+                "address": "군자",
+            }
+            // 생성과 비슷하지만 수정하는 데이터의 id값 넣어주기 
+            fetch("http://localhost:3000/customers/6620cbd32d6d9b26ce156596",{
+                method:"PUT",
+                body:JSON.stringify(customer),
+                headers:{
+                    "content-type":"application/json; charset=UTF-8"
+                }
+            })
+            .then(response => response.json())
+            .then((json)=> console.log(json))    
+        }
+
+      
+// 삭제버튼 클릭시 식별값구해서 함수에 넘기기 
+const tbBody = document.querySelector("#tbBody")
+tbBody.addEventListener('click',function(e){
+        // 클릭된 요소가 삭제버튼이면 
+        if (event.target.classList.contains('delete-userdata')) {
+            console.log('클릭한 요소가.delete-userdata가 맞다')
+            // 식별값
+            let userIndex =  e.target.previousSibling.innerText
+            deleteData(userIndex)
+        }    
+        })
+// 삭제
+function deleteData(id){
+    console.log(id)
+    fetch(`http://localhost:3000/customers/${id}`,{
+        method:"DELETE"
+    })
+    .then(response => response.json())
+    .then(json => console.log(json))
+}
+
+
+// 모두삭제
+// 버튼 클릭시 모든 index값 배열에 저장 
+// for문으로 돌려서 함수호출
+let customerIndexes = [];
+function deleteAllData(){
+    alert('모두삭제')
+document.querySelectorAll('.customer-index').forEach(function(e){
+    customerIndexes.push(e.innerText); // 배열에 값 추가
+ });
+
+ customerIndexes.forEach(function(e){
+    // console.log(e)
+    deleteData(e)
+ });
+}
+    </script>
+</body>
+</html>

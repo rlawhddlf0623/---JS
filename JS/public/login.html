@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <link rel="stylesheet" href="./reset.css">
+    <link rel="stylesheet" href="./login.css">
+    
+    <script type="text/javascript" src="https://static.nid.naver.com/js/naverLogin_implicit-1.0.3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    <script defer src="./login.js"></script>
+   
+
+
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <a href="./index.html">
+                <h2 class="logo">BetterLife</h2>
+            </a>
+            
+            <form class="login-input" >
+                <input type="text" name="id" placeholder="아이디" required>
+                <input type="password" name="password" placeholder="비밀번호" required>
+                <button class="login_button" type="submit">로그인</button>   
+            </form>
+            <div class="additional-options">
+                <a href="#">아이디 찾기</a>
+                <a href="#">비밀번호 찾기</a>
+                <a href="#">회원가입</a>
+            </div>
+            <a class="login-button__item login-button__item--kakao" href="javascript:kakaoLogin();" id="login-with-kakao">
+                <svg class="login-button__item__logo" fill="none" height="30" viewBox="0 0 30 30" width="30" xmlns="http://www.w3.org/2000/svg">
+                    <title>kakao 로고</title>
+                    <path clip-rule="evenodd" d="M15 7C10.029 7 6 10.129 6 13.989C6 16.389 7.559 18.505 9.932 19.764L8.933 23.431C8.845 23.754 9.213 24.013 9.497 23.826L13.874 20.921C14.243 20.958 14.618 20.978 15 20.978C19.971 20.978 24 17.849 24 13.989C24 10.129 19.971 7 15 7Z" fill="black" fill-rule="evenodd"></path>
+                </svg>
+                카카오 로그인
+            </a>
+              <!-- 네이버 로그인 버튼 노출 영역 -->
+                 <div id="naver_id_login" name="naver_id_login">네이버 로그인</div>
+        </div>
+
+    </div>
+
+    <!-- <button onclick="javascript:kakaoLogout();">로그아웃</button> -->
+    <!-- <button onclick="javascript:secession();">탈퇴</button> -->
+
+
+    
+</body>
+</html>

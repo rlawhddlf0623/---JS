@@ -1,0 +1,98 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+  }
+  input {
+      /* 브라우저 기본 스타일 무시 */
+      /* appearance: none; */
+      /* -webkit-appearance: none; 
+      -moz-appearance: none;  */
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px 12px;
+      outline: none;
+  }
+  .container {
+    max-width: 400px;
+    margin: 50px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .form-group input:focus{
+      border: 1.5px solid #03c75a;;
+  }
+  
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    /* display: inline-block; */
+    width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  
+  button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* checkbox */
+  #chk_checkall + label{
+    font-weight: bold;
+  }
+  .checkall{
+      padding-top: 20px;
+      margin-bottom: 8px;
+  }
+  .c-checkbox-item {
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+  }
+  .c-checkbox-item .wrapper {
+      display: flex;
+      align-items: center;
+      flex: 1 0 auto;
+      width: 100%;
+  }
+  input[type="checkbox"], input[type="radio"] {
+      box-sizing: border-box;
+      padding: 0;
+  }
+  .checkall .c-checkbox-item label {
+      font-size: 16px;
+      line-height: 1.13;
+      color: #111111;
+  }
+  .terms{
+      padding: 0px;
+  }
+  .input-boerder-red{
+      border: 1.5px solid red;;
+  }
