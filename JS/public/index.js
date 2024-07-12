@@ -132,12 +132,12 @@ function createToDo(newTodoObj) {
                               <span class="Todo-important-button">☆</span>
                               <span class="Todo-remove-button">X</span>
                           </div>
-                          <h6 type="text" class="TodoUpdate hidden-input" > </h6>   
+                          <h6 type="text" class="input hidden-input" > </h6>   
                       </div>
                      
                           `;
   Todo_List.innerHTML += newTodo;
-  TodoInput.value = "";
+  // TodoInput.value = "";
 }
 //  <input type="text" class="TodoUpdate">
 // submit되면 객체만들어서 배열에 저장 + 화면출력
@@ -318,11 +318,15 @@ Todo_List.addEventListener("click", function (e) {
 
 // todo update
 Todo_List.addEventListener("click", function (e) {
-  // 클릭된 요소에 가장 가까운 Todo-container 요소를 찾음
+  console.log("toggle");
+  console.log(e.target);
   const TodoContainer = e.target.closest(".Todo-container");
-  const todoText = TodoContainer.querySelector(".Todo-text");
-  console.log(todoText.textContent);
+  console.log(TodoContainer);
+
   if (!TodoContainer) return;
+  const todoText = TodoContainer.querySelector(".Todo-text");
+  console.log(todoText);
+
   if (todoText) {
     const h6 = TodoContainer.nextElementSibling;
     console.log(h6);
@@ -335,93 +339,78 @@ Todo_List.addEventListener("click", function (e) {
       h6.classList.remove("visible-input");
       h6.classList.add("hidden-input");
     }
-
-    function executeAfterDelay() {
-      // h6 요소의 크기와 위치를 복사
-      const rect = h6.getBoundingClientRect();
-      const parentRect = h6.parentNode.getBoundingClientRect();
-      //  input생성
-      const input = document.createElement("input");
-      input.type = "text";
-      input.value = todoText.textContent;
-      input.className = "TodoUpdate";
-
-      // input 을 h6 위치에 놓기
-      input.style.position = "absolute";
-      input.style.backgroundColor = "black";
-      input.style.top = `${rect.top - parentRect.top}px`;
-      input.style.left = `${rect.left - parentRect.left}px`;
-      input.style.height = `${rect.height}px`;
-      input.style.width = `${rect.width}px`;
-      // h6 요소를 숨기고 그 자리에 input 요소 삽입
-      h6.parentNode.appendChild(input);
-      h6.style.opacity = "0";
-      h6.style.height = "0";
-      // h6.style.display = "none";
-
-      input.focus();
-      // change 이벤트 리스너 추가
-      const handleUpdate = () => {
-        // 입력 필드의 값을 todoText에 설정
-
-        todoText.textContent = input.value;
-        h6.style.opacity = "1";
-        h6.style.height = "30px";
-        // h6.style.display = "block";
-        input.remove();
-        if (h6.classList.contains("hidden-input")) {
-          h6.classList.remove("hidden-input");
-          h6.classList.add("visible-input");
-        } else {
-          h6.classList.remove("visible-input");
-          h6.classList.add("hidden-input");
-        }
-      };
-      h6.addEventListener("blur", handleUpdate);
-      h6.addEventListener("change", handleUpdate);
-      h6.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          input.blur();
-        }
-      });
-      // h6.addEventListener(
-      //   "blur,change",
-      //   function () {
-      //     handleUpdate(h6, todoText);
-      //   },
-      //   { once: true }
-      // );
-    }
-    setTimeout(executeAfterDelay, 500);
+    setTimeout(() => executeAfterDelay(h6, todoText, e), 500);
   }
 });
 
-// function handleUpdate(h6, todoText) {
-//   // 입력 필드의 값을 todoText에 설정
-//   const updateText = input.value;
-//   todoText.textContent = updateText;
-//   h6.style.opacity = "1";
-//   h6.style.height = "30px";
-//   input.remove();
-//   if (h6.classList.contains("hidden-input")) {
-//     h6.classList.remove("hidden-input");
-//     h6.classList.add("visible-input");
-//   } else {
-//     h6.classList.remove("visible-input");
-//     h6.classList.add("hidden-input");
-//   }
+function executeAfterDelay(h6, todoText, e) {
+  console.log("<h6>생성해서 input형제요소로 넣기");
+  const rect = h6.getBoundingClientRect();
+  const parentRect = h6.parentNode.getBoundingClientRect();
 
-//   // 스타일 변경 및 입력 필드 제거
-//   // TodoUpdate.style.height = "0px";
-//   //TodoUpdate.style.border = "2px solid black";
+  //  input생성
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = todoText.textContent;
+  input.className = "input-style";
 
-//   // 스타일이 적용된 후 요소 제거
-//   setTimeout(() => {
-//     // TodoUpdate.style.height = "0px";
-//     // TodoUpdate.style.border = "none";
-//     // TodoUpdate.remove();
-//   }, 500); // 애니메이션 지속 시간과 일치시키기 위해 500ms 설정
-// }
+  // input 을 h6 위치에 놓기
+  input.style.position = "absolute";
+  input.style.top = `${rect.top - parentRect.top}px`;
+  input.style.left = `${rect.left - parentRect.left}px`;
+  input.style.height = `${rect.height}px`;
+  // input.style.width = `${rect.width}px`;
+  // h6 요소를 숨기고 그 자리에 input 요소 삽입
+  h6.parentNode.appendChild(input);
+  // h6.style.opacity = "0";
+  // h6.style.height = "0";
+  // h6.style.display = "none";
+
+  input.focus();
+
+  // todoText.addEventListener("click", handleUpdate, { once: true });
+  input.addEventListener("blur", () => handleUpdate(e, input, todoText, h6), {
+    once: true,
+  });
+  input.addEventListener("change", () => handleUpdate(e, input, todoText, h6), {
+    once: true,
+  });
+  input.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key === "Enter") {
+        input.blur();
+      }
+    },
+    { once: true }
+  );
+}
+let isUpdating = false;
+function handleUpdate(e, input, todoText, h6) {
+  console.log("input제거 h6올리기");
+  if (isUpdating) return; // 중복 호출 방지
+  isUpdating = true;
+  // if (e.target == input) {
+  //   input.remove();
+  //   return;
+  // }
+  console.log(e.target);
+  // 입력 필드의 값을 todoText에 설정
+  todoText.textContent = input.value;
+  input.remove();
+
+  if (h6.classList.contains("hidden-input")) {
+    h6.classList.remove("hidden-input");
+    h6.classList.add("visible-input");
+  } else {
+    h6.classList.remove("visible-input");
+    h6.classList.add("hidden-input");
+  }
+
+  setTimeout(() => {
+    isUpdating = false;
+  }, 0);
+}
 
 // localStorage 비우기
 function Clear() {
