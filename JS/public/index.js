@@ -125,19 +125,19 @@ function createToDo(newTodoObj) {
     return;
   }
   let newTodo = `
-                      <div class="Todo-box">
-                          <div class="Todo-container" id="${newTodoObj.id}" style="order: ${newTodoObj.id};" data-value="${newTodoObj._id}">
-                              <div class="Todo-CheckBox"></div>
+                      <div class="Todo-box" style="order: ${newTodoObj.id};">
+                          <div class="Todo-container" id="${newTodoObj.id}" data-value="${newTodoObj._id}">
+                              <div class="Todo-CheckBox down"></div>
                               <h6 class="Todo-text">${newTodoObj.todo}</h6>
                               <span class="Todo-important-button">☆</span>
                               <span class="Todo-remove-button">X</span>
                           </div>
-                          <h6 type="text" class="input hidden-input" > </h6>   
+                          <h6 type="text" class="input" > </h6>   
                       </div>
                      
                           `;
   Todo_List.innerHTML += newTodo;
-  // TodoInput.value = "";
+  TodoInput.value = "";
 }
 //  <input type="text" class="TodoUpdate">
 // submit되면 객체만들어서 배열에 저장 + 화면출력
@@ -242,109 +242,181 @@ async function DeleteData(todoId) {
 
 // 버블링 사용
 // todo클릭시 변화 (줄그어지기 + 색변화 + 아래로 이동 )
-Todo_List.addEventListener("click", function (e) {
-  // 클릭된 요소에 가장 가까운 Todo-container 요소를 찾음
+// Todo_List.addEventListener("click", function (e) {
+//   console.log("아래로 이동");
+//   // 클릭된 요소에 가장 가까운 Todo-container 요소를 찾음
+//   const targetTodo = e.target.closest(".Todo-container");
+
+//   if (e.target.classList.contains("Todo-CheckBox")) {
+//     const todoText = targetTodo.querySelector(".Todo-text");
+
+//     //아래로 이동
+//     const UserText = todoText.textContent;
+//     // 새로운 요소생성
+//     const newTodo = document.createElement("div");
+
+//     const TodoIndex = JSON.parse(localStorage.getItem(INDEX_KEY));
+
+//     newTodo.classList.add("Todo-container");
+//     newTodo.style.order = `${TodoIndex[0]}`;
+
+//     newTodo.innerHTML = `
+//                             <div class="Todo-CheckBox"></div>
+//                             <h6 class="Todo-text">${UserText}</h6>
+//                             <span class="Todo-important-button">☆</span>
+//                             <span class="Todo-remove-button">X</span>
+//                         `;
+//     // newTodo안에 요소 찾아서 변수에 넣기
+//     const newTodoText = newTodo.querySelector(".Todo-text");
+//     const newTodoCheck = newTodo.querySelector(".Todo-CheckBox");
+//     // 줄 그어지기
+//     newTodoText.classList.add("line-through");
+//     // 색변화
+//     newTodoCheck.classList.add("Todo-CheckBox-color");
+//     //이동
+//     // Todo_done_container.appendChild(newTodo);
+//     // class추가
+
+//     Todo_List.appendChild(newTodo);
+
+//     //기존 요소제거
+//     targetTodo.remove();
+//   }
+// });
+
+// // todoDone의 checkbox클릭시 다시 위로 이동
+// Todo_List.addEventListener("click", function (e) {
+//   console.log("위로 이동");
+//   // 클릭된 요소에 가장 가까운 Todo-container 요소를 찾음
+//   const targetTodo = e.target.closest(".Todo-container");
+
+//   if (e.target.classList.contains("Todo-CheckBox")) {
+//     const todoText = targetTodo.querySelector(".Todo-text");
+
+//     const UserText = todoText.textContent;
+//     // 새로운 요소생성
+//     const newTodo = document.createElement("div");
+//     newTodo.classList.add("Todo-container");
+//     const TodoIndex = JSON.parse(localStorage.getItem(INDEX_KEY));
+
+//     newTodo.style.order = `${50 - TodoIndex[0]}`;
+//     newTodo.innerHTML = `
+//                              <div class="Todo-CheckBox"></div>
+//                              <h6 class="Todo-text">${UserText}</h6>
+//                              <span class="Todo-important-button">☆</span>
+//                              <span class="Todo-remove-button">X</span>
+//                          `;
+//     // 클래스 추가
+//     const newTodoText = newTodo.querySelector(".Todo-text");
+//     const newTodoCheck = newTodo.querySelector(".Todo-CheckBox");
+//     // 줄 그어지기
+//     newTodoText.classList.remove("line-through");
+//     // 색변화
+//     newTodoCheck.classList.remove("Todo-CheckBox-color");
+//     //이동
+//     Todo_List.appendChild(newTodo);
+//     //기존 요소제거
+//     // newTodo.remove();
+//     targetTodo.remove();
+//   }
+// });
+
+function handleTodoToggle(e) {
   const targetTodo = e.target.closest(".Todo-container");
-
+  const newTodoObjId = targetTodo.id;
+  const todoText = targetTodo.querySelector(".Todo-text");
+  const UserText = todoText.textContent;
+  if (!targetTodo) {
+    console.error("Target Todo not found");
+    return;
+  }
+  if (!newTodoObjId) {
+    console.error("Target Todo has no valid ID");
+    return;
+  }
+  if (!UserText) {
+    console.error("No valid text content found in Todo-text");
+    return;
+  }
   if (e.target.classList.contains("Todo-CheckBox")) {
-    const todoText = targetTodo.querySelector(".Todo-text");
+    console.log("targetTodo.id", newTodoObjId);
+    console.log("e.target", e.target);
 
-    //아래로 이동
-    const UserText = todoText.textContent;
-    // 새로운 요소생성
     const newTodo = document.createElement("div");
-
-    newTodo.classList.add("Todo-container");
-    newTodo.style.order = `${objectIndex}`;
+    newTodo.classList.add("Todo-box");
+    newTodo.style.order = e.target.classList.contains("down")
+      ? 1000 - newTodoObjId
+      : newTodoObjId;
 
     newTodo.innerHTML = `
-                            <div class="Todo-CheckBox"></div>
-                            <h6 class="Todo-text">${UserText}</h6>
-                            <span class="Todo-important-button">☆</span>
-                            <span class="Todo-remove-button">X</span>                    
-                        `;
-    // newTodo안에 요소 찾아서 변수에 넣기
+                          <div class="Todo-container" id="${newTodoObjId}">
+                              <div class="Todo-CheckBox"></div>
+                              <h6 class="Todo-text">${UserText}</h6>
+                              <span class="Todo-important-button">☆</span>
+                              <span class="Todo-remove-button">X</span>
+                          </div>
+                          <h6 type="text" class="input" > </h6>
+      `;
+
     const newTodoText = newTodo.querySelector(".Todo-text");
     const newTodoCheck = newTodo.querySelector(".Todo-CheckBox");
-    // 줄 그어지기
-    newTodoText.classList.add("line-through");
-    // 색변화
-    newTodoCheck.classList.add("Todo-CheckBox-color");
-    //이동
-    // Todo_done_container.appendChild(newTodo);
-    // class추가
-
+    if (e.target.classList.contains("down")) {
+      console.log("아래로 이동");
+      newTodoText.classList.add("line-through");
+      newTodoCheck.classList.add("Todo-CheckBox-color");
+      newTodoCheck.classList.remove("down");
+    } else {
+      console.log("위로 이동");
+      newTodoText.classList.remove("line-through");
+      newTodoCheck.classList.remove("Todo-CheckBox-color");
+      newTodoCheck.classList.add("down");
+    }
     Todo_List.appendChild(newTodo);
 
-    //기존 요소제거
-    targetTodo.remove();
+    e.target.remove();
+    // 부모 요소 제거
+
+    // targetTodo.parentNode.remove();
+    const parentTodoBox = targetTodo.closest(".Todo-box");
+    parentTodoBox.remove();
   }
-});
-
-// todoDone의 checkbox클릭시 다시 위로 이동
-Todo_List.addEventListener("click", function (e) {
-  // 클릭된 요소에 가장 가까운 Todo-container 요소를 찾음
-  const targetTodo = e.target.closest(".Todo-container");
-
-  if (e.target.classList.contains("Todo-CheckBox")) {
-    const todoText = targetTodo.querySelector(".Todo-text");
-
-    //위로 이동
-    const UserText = todoText.textContent;
-    // 새로운 요소생성
-    const newTodo = document.createElement("div");
-    newTodo.classList.add("Todo-container");
-    newTodo.style.order = `${50 - objectIndex}`;
-    newTodo.innerHTML = `
-                             <div class="Todo-CheckBox"></div>
-                             <h6 class="Todo-text">${UserText}</h6>
-                             <span class="Todo-important-button">☆</span>
-                             <span class="Todo-remove-button">X</span>
-                         `;
-    // 클래스 추가
-    const newTodoText = newTodo.querySelector(".Todo-text");
-    const newTodoCheck = newTodo.querySelector(".Todo-CheckBox");
-    // 줄 그어지기
-    newTodoText.classList.remove("line-through");
-    // 색변화
-    newTodoCheck.classList.remove("Todo-CheckBox-color");
-    //이동
-    Todo_List.appendChild(newTodo);
-    //기존 요소제거
-    newTodo.remove();
-    //  targetTodo.remove();
-  }
-});
+}
+Todo_List.addEventListener("click", handleTodoToggle);
 
 // todo update
-Todo_List.addEventListener("click", function (e) {
+function toggle(e) {
   console.log("toggle");
   console.log(e.target);
   const TodoContainer = e.target.closest(".Todo-container");
-  console.log(TodoContainer);
+  // console.log(TodoContainer);
 
   if (!TodoContainer) return;
   const todoText = TodoContainer.querySelector(".Todo-text");
   console.log(todoText);
+  console.log(e.target);
 
-  if (todoText) {
+  if (todoText && e.target == todoText) {
     const h6 = TodoContainer.nextElementSibling;
-    console.log(h6);
+    // console.log(h6);
+    h6.className = "hidden-input";
 
     // Toggle
     if (h6.classList.contains("hidden-input")) {
       h6.classList.remove("hidden-input");
       h6.classList.add("visible-input");
+      setTimeout(() => executeAfterDelay(h6, todoText, e), 500);
+      console.log("toggle down");
     } else {
       h6.classList.remove("visible-input");
       h6.classList.add("hidden-input");
+      console.log("toggle up");
     }
-    setTimeout(() => executeAfterDelay(h6, todoText, e), 500);
   }
-});
+}
+Todo_List.addEventListener("click", toggle);
 
 function executeAfterDelay(h6, todoText, e) {
-  console.log("<h6>생성해서 input형제요소로 넣기");
+  // console.log("<h6>생성해서 input형제요소로 넣기");
   const rect = h6.getBoundingClientRect();
   const parentRect = h6.parentNode.getBoundingClientRect();
 
@@ -367,14 +439,76 @@ function executeAfterDelay(h6, todoText, e) {
   // h6.style.display = "none";
 
   input.focus();
+  setupEventListeners(input, todoText, h6);
+  // let click = "click";
+  // let blur = "blur";
+  // let change = "change";
+  // todoText.addEventListener(
+  //   "click",
+  //   () => {
+  //     if (!isUpdating) {
+  //       handleUpdate("click", input, todoText, h6);
+  //     }
+  //   },
+  //   { once: true }
+  // );
 
-  // todoText.addEventListener("click", handleUpdate, { once: true });
-  input.addEventListener("blur", () => handleUpdate(e, input, todoText, h6), {
-    once: true,
-  });
-  input.addEventListener("change", () => handleUpdate(e, input, todoText, h6), {
-    once: true,
-  });
+  // input.addEventListener(
+  //   "blur",
+  //   () => {
+  //     if (!isUpdating) {
+  //       handleUpdate("blur", input, todoText, h6);
+  //     }
+  //   },
+  //   { once: true }
+  // );
+
+  // input.addEventListener(
+  //   "change",
+  //   () => {
+  //     if (!isUpdating) {
+  //       handleUpdate("change", input, todoText, h6);
+  //     }
+  //   },
+  //   { once: true }
+  // );
+
+  // input.addEventListener(
+  //   "keydown",
+  //   (event) => {
+  //     if (event.key === "Enter" && !isUpdating) {
+  //       input.blur();
+  //     }
+  //   },
+  //   { once: true }
+  // );
+}
+
+function setupEventListeners(input, todoText, h6) {
+  const handleBlur = () => {
+    handleUpdate("blur", input, todoText, h6);
+    // blur가 발생하면 click 이벤트 리스너를 제거
+    Todo_List.removeEventListener("click", toggle);
+    setTimeout(() => {
+      Todo_List.addEventListener("click", toggle);
+    }, 100);
+  };
+
+  const handleClick = () => {
+    handleUpdate("click", input, todoText, h6);
+    // click이 발생하면 blur 이벤트 리스너를 제거
+    input.removeEventListener("blur", handleBlur);
+  };
+
+  const handleChange = () => {
+    handleUpdate("change", input, todoText, h6);
+  };
+
+  // 이벤트 리스너 등록
+  todoText.addEventListener("click", handleClick, { once: true });
+  input.addEventListener("blur", handleBlur, { once: true });
+  input.addEventListener("change", handleChange, { once: true });
+
   input.addEventListener(
     "keydown",
     (event) => {
@@ -385,28 +519,29 @@ function executeAfterDelay(h6, todoText, e) {
     { once: true }
   );
 }
+
 let isUpdating = false;
-function handleUpdate(e, input, todoText, h6) {
+function handleUpdate(click, input, todoText, h6) {
   console.log("input제거 h6올리기");
+
   if (isUpdating) return; // 중복 호출 방지
   isUpdating = true;
-  // if (e.target == input) {
-  //   input.remove();
-  //   return;
-  // }
-  console.log(e.target);
+  console.log(click);
   // 입력 필드의 값을 todoText에 설정
   todoText.textContent = input.value;
   input.remove();
 
-  if (h6.classList.contains("hidden-input")) {
-    h6.classList.remove("hidden-input");
-    h6.classList.add("visible-input");
-  } else {
-    h6.classList.remove("visible-input");
-    h6.classList.add("hidden-input");
-  }
-
+  h6.classList.remove("visible-input");
+  h6.classList.add("hidden-input");
+  // if (h6.classList.contains("hidden-input")) {
+  //   h6.classList.remove("hidden-input");
+  //   h6.classList.add("visible-input");
+  // } else {
+  //   h6.classList.remove("visible-input");
+  //   h6.classList.add("hidden-input");
+  // }
+  console.log("isUpdating");
+  console.log(isUpdating);
   setTimeout(() => {
     isUpdating = false;
   }, 0);
