@@ -57,6 +57,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// 사용자 도큐먼트 개수 세기
+// const count = await Todo.countDocuments({});
+// console.log(`Number of documents: ${count}`);
+
 //todo 저장
 app.post("/register", async (req, res) => {
   try {
@@ -66,14 +70,15 @@ app.post("/register", async (req, res) => {
       id,
       todo,
     });
-    const savedTodo = await newTodo.save();
+    await newTodo.save();
     // 사용자 문서에 새로운 ToDo 항목 추가
     /*
     await User.findByIdAndUpdate(userId, {
       $push: { todos: savedTodo._id },
     });
   */
-    res.status(200).json(newTodo);
+    const count = await Todo.countDocuments({});
+    res.status(200).json({ newTodo, count });
   } catch (err) {
     res.status(500).send("Error registering user");
     console.log("err:", err);
@@ -88,9 +93,8 @@ app.delete("/register/:todoId", async (req, res) => {
     const deletedTodo = await Todo.findByIdAndDelete(todoId);
 
     if (deletedTodo) {
-      res
-        .status(200)
-        .json({ message: `Todo with ID ${todoId} deleted successfully.` });
+      const count = await Todo.countDocuments({});
+      res.status(200).json(count);
     } else {
       res.status(404).json({ error: "Todo not found." });
     }
@@ -99,6 +103,144 @@ app.delete("/register/:todoId", async (req, res) => {
     res.status(500).json({ error: "Failed to delete todo." });
   }
 });
+
+//Update
+app.put("/Update", async (req, res) => {
+  const { todoId, update } = req.body;
+
+  if (!todoId || !update) {
+    return res.status(400).json({ success: false, message: "Invalid data" });
+  }
+  console.log("todoId ,update", todoId, update);
+  try {
+    const updatedTodo = await Todo.findByIdAndUpdate(
+      todoId,
+      { todo: update },
+      { new: true, runValidators: true }
+    );
+    console.log(updatedTodo);
+    if (!updatedTodo) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Todo not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Todo updated successfully!",
+      todo: updatedTodo,
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ success: false, message: "An error occurred" });
+  }
+});
+
+// localStorage와 DB동기화
+app.get("/syncData", async (req, res) => {
+  try {
+    // 현재 날짜를 기준으로 할 때, 날짜를 문자열로 변환
+    const now = new Date();
+    const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(now.setHours(23, 59, 59, 999));
+
+    // 현재 날짜의 todos를 조회
+    const todos = await Todo.find({
+      date: { $gte: startOfDay, $lte: endOfDay },
+    });
+
+    // 클라이언트에 데이터 전송
+    res.json(todos);
+  } catch (error) {
+    console.error("Error fetching todos:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// Read (현재 todo수 반환)
+app.get("/getCurrentTodo", async (req, res) => {
+  try {
+    // 현재 날짜를 기준으로 할 때, 날짜를 문자열로 변환
+    const now = new Date();
+    const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(now.setHours(23, 59, 59, 999));
+
+    const count = await Todo.countDocuments({
+      date: { $gte: startOfDay, $lte: endOfDay },
+    });
+    res.status(200).json(count);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error counting documents");
+  }
+});
+
+app.get("/getDoneTodo", async (req, res) => {
+  try {
+    // 현재 날짜를 기준으로 할 때, 날짜를 문자열로 변환
+    const now = new Date();
+    const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(now.setHours(23, 59, 59, 999));
+
+    const count = await Todo.countDocuments({
+      status: "completed",
+      date: { $gte: startOfDay, $lte: endOfDay },
+    });
+    res.status(200).json({ completedCount: count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error counting completed todos");
+  }
+});
+// status 'completed'로 업데이트하는 엔드포인트
+app.put("/updateStatusCompleted/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("Received ID1:", id);
+    if (!id) {
+      return res.status(400).send("ID is required");
+    }
+
+    console.log("Received ID2:", id);
+    const updatedTodo = await Todo.findOneAndUpdate(
+      { _id: id },
+      { status: "completed" },
+      { new: true }
+    );
+    console.log("Received ID3:", id);
+    console.log("updatedTodo", updatedTodo);
+    if (updatedTodo) {
+      res.status(200).json(updatedTodo);
+    } else {
+      res.status(404).send("Todo not found");
+    }
+  } catch (error) {
+    console.error("Error updating status:", error);
+    res.status(500).send("Error updating status");
+  }
+});
+// status 'Pending'로 업데이트하는 엔드포인트
+app.put("/updateStatusPending/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedTodo = await Todo.findOneAndUpdate(
+      { _id: id },
+      { status: "pending" },
+      { new: true }
+    );
+
+    if (updatedTodo) {
+      res.status(200).json(updatedTodo);
+    } else {
+      res.status(404).send("Todo not found");
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error updating status");
+  }
+});
+
 // 회원정보 저장 + 사용자id로 todo collection만들기
 app.post("/UserCollection", async (req, res) => {
   const { id, pw, email, name } = req.body;
