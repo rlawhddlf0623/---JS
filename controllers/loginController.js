@@ -1,5 +1,17 @@
+const User = require("../models/User");
+const bcrypt = require("bcrypt");
+const {
+  CreateAccessToken,
+  CreateRefreshToken,
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET,
+  JWT_ACCESS_EXPIRATION_TIME,
+  JWT_REFRESH_EXPIRATION_TIME,
+} = require("../middlewares/auth");
+
 // 로그인 인증 : app.post("/login",
-exports.login = async (req, res) => {
+let userID = 0;
+exports.userLogin = async (req, res) => {
   const { id, pw } = req.body;
   if (!id || !pw) {
     return res.status(400).json({ error: "id and pw are required" });
@@ -40,7 +52,6 @@ exports.login = async (req, res) => {
     console.log("RefreshToken : ", RefreshToken);
 
     res.status(200).json({ AccessToken });
-    res.redirect("/");
   } catch (err) {
     res.status(500).send("token can't make it");
     console.log("err:", err);
