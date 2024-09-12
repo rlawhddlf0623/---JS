@@ -86,7 +86,7 @@ let AccessToken = 0;
 
 async function CreateToken(id, pw) {
   console.log(`id:${id},pw:${pw}`);
-  await fetch("http://localhost:3000/login/login", {
+  await fetch("http://localhost:3000/login", {
     method: "POST",
     body: JSON.stringify({ id, pw }),
     headers: {
@@ -100,15 +100,15 @@ async function CreateToken(id, pw) {
       return response.json(); // JSON 응답을 처리
     })
     .then((data) => {
+      console.log(data);
       if (data.success == false) {
         console.log(data.message);
       }
       AccessToken = data;
-      console.log(data);
-      window.location.href = `./index.html`;
+      window.location.href = "/";
     })
     .catch((error) => {
-      console.error("Error:", error);
+      console.error(error);
     });
 }
 
