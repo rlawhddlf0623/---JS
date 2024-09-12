@@ -26,7 +26,6 @@ let currentTodo = 0;
 let AccessTokenSave = 0;
 
 // Calendar
-
 const monthYearElement = document.getElementById("month-year");
 const calendarDatesElement = document.getElementById("calendar-dates");
 const prevMonthButton = document.getElementById("prev-month");

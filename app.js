@@ -30,6 +30,8 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
+global.AccessToken = null;
+
 app.use("/", todoRouter);
 app.use("/login", loginRoutes);
 app.use("/join_membership", join_membershipRoutes);

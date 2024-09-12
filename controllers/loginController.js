@@ -51,7 +51,8 @@ exports.userLogin = async (req, res) => {
     );
     console.log("RefreshToken : ", RefreshToken);
 
-    res.status(200).json({ AccessToken });
+    global.AccessToken = AccessToken;
+    res.status(200).send();
   } catch (err) {
     res.status(500).send("token can't make it");
     console.log("err:", err);

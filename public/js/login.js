@@ -81,8 +81,6 @@ loginInput.addEventListener("submit", function (e) {
   console.log(id, password);
   CreateToken(id, password);
 });
-// login
-let AccessToken = 0;
 
 async function CreateToken(id, pw) {
   console.log(`id:${id},pw:${pw}`);
@@ -97,15 +95,14 @@ async function CreateToken(id, pw) {
       if (!response.ok) {
         throw new Error("Network response was not ok.");
       }
-      return response.json(); // JSON 응답을 처리
+      return response.json();
     })
     .then((data) => {
-      console.log(data);
       if (data.success == false) {
         console.log(data.message);
+      } else if (response.status === 200) {
+        window.location.href = "/";
       }
-      AccessToken = data;
-      window.location.href = "/";
     })
     .catch((error) => {
       console.error(error);
