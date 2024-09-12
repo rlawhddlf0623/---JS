@@ -30,22 +30,8 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-// 사용자 입력 폼 라우트
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "index.html"));
-  // res.send("Hello, world!");
-});
-// 요청연결
 app.use("/", todoRouter);
-
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "login.html"));
-});
 app.use("/login", loginRoutes);
-
-app.get("/join_membership", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "join_membership.html"));
-});
 app.use("/join_membership", join_membershipRoutes);
 
 // const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET; // Access Token의 비밀 키
