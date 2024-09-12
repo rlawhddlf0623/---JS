@@ -1,6 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const todoController = require("../controllers/todoController");
+const path = require("path");
+
+router.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../views", "index.html"));
+});
 
 // 저장
 router.post("/register", todoController.register);
