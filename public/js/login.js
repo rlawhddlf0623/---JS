@@ -86,7 +86,7 @@ let AccessToken = 0;
 
 async function CreateToken(id, pw) {
   console.log(`id:${id},pw:${pw}`);
-  await fetch("http://localhost:3000/login", {
+  await fetch("http://localhost:3000/login/userLogin", {
     method: "POST",
     body: JSON.stringify({ id, pw }),
     headers: {
