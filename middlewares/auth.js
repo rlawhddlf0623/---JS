@@ -4,12 +4,11 @@ const dotenv = require("dotenv").config();
 const redisClient = require("../config/redis");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
 
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET; // Access Token의 비밀 키
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET; // Refresh Token의 비밀 키
-const JWT_ACCESS_EXPIRATION_TIME = process.env.JWT_ACCESS_EXPIRATION_TIME; // Access Token의 유효 기간 (1시간)
-const JWT_REFRESH_EXPIRATION_TIME = process.env.JWT_REFRESH_EXPIRATION_TIME; // Refresh Token의 유효 기간 (14일)
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+const JWT_ACCESS_EXPIRATION_TIME = process.env.JWT_ACCESS_EXPIRATION_TIME;
+const JWT_REFRESH_EXPIRATION_TIME = process.env.JWT_REFRESH_EXPIRATION_TIME;
 
 let AccessTokenSave = 0;
 
@@ -69,7 +68,7 @@ app.get("/AccessToken", async (req, res) => {
 });
 
 // 인증 미들웨어
-exports.authenticateToken = async (req, res, AccessTokenSave) => {
+async function authenticateToken(req, res, AccessTokenSave) {
   console.log("userID", userID);
   const cookieKey = `${userID}_RefreshToken`;
   const RefreshToken = req.cookies[cookieKey];
@@ -130,69 +129,7 @@ exports.authenticateToken = async (req, res, AccessTokenSave) => {
 
     return newAccessToken;
   }
-};
-// async function authenticateToken(req, res, AccessTokenSave) {
-//   console.log("userID", userID);
-//   const cookieKey = `${userID}_RefreshToken`;
-//   const RefreshToken = req.cookies[cookieKey];
-//   console.log(`${userID}_RefreshToken`, RefreshToken);
-//   if (AccessTokenSave) {
-//     jwt.verify(AccessTokenSave, JWT_ACCESS_SECRET, (err, user) => {
-//       if (err) {
-//         console.log("AccessToken 형식X");
-//         return;
-//       }
-//       // req.user = user; // 요청 객체에 사용자 정보 추가
-//       // console.log("Refresh token인증된 사용자 : ", user);
-//       // next(); // 다음 미들웨어로 이동
-//     });
-//     console.log("AccessToken으로 인증되었습니다.");
-//     return AccessTokenSave;
-//   } else {
-//     if (RefreshToken == null) {
-//       console.log("cookie에서 가져온 Refresh token이 존재하지 않습니다. ");
-//       return;
-//     }
-//     console.log("cookie에서 가져온 Refresh token : ", RefreshToken);
-
-//     jwt.verify(RefreshToken, JWT_REFRESH_SECRET, (err, user) => {
-//       if (err) {
-//         console.log("cookie에서 가져온 Refresh token 형식X");
-//         return;
-//       }
-//       // req.user = user; // 요청 객체에 사용자 정보 추가
-//       // console.log("Refresh token인증된 사용자 : ", user);
-//       // next(); // 다음 미들웨어로 이동
-//     });
-
-//     // refresh로  Access 발급하는 함수 호출 ( 새로고침시 Access 초기화되는 문제 )
-//     // 1.id추출
-//     const RefreshPayload = RefreshToken.split(".")[1];
-//     const Refreshpayload = JSON.parse(atob(RefreshPayload));
-//     const id = Refreshpayload.id;
-//     console.log("payload.id:", id); // Payload에 포함된 id 값
-
-//     // 2.refresh 확인
-//     await getDataFromRedis(RefreshToken, id);
-
-//     let newAccessToken = CreateAccessToken(
-//       id,
-//       JWT_ACCESS_SECRET,
-//       JWT_ACCESS_EXPIRATION_TIME
-//     );
-//     console.log("newAccessToken : ", newAccessToken);
-
-//     let newRefreshToken = CreateRefreshToken(
-//       id,
-//       JWT_REFRESH_SECRET,
-//       JWT_REFRESH_EXPIRATION_TIME,
-//       res
-//     );
-//     console.log("newRefreshToken : ", newRefreshToken);
-
-//     return newAccessToken;
-//   }
-// }
+}
 
 // Redis에서 RefreshToken 가져와 비교
 async function getDataFromRedis(RefreshToken, key) {
@@ -289,3 +226,13 @@ async function getDataFromRedis(RefreshToken, key) {
 //   res.cookie("access_token", newAccessToken, { httpOnly: true, secure: true });
 //   res.send("New access token issued");
 // });
+
+module.exports = {
+  CreateAccessToken,
+  CreateRefreshToken,
+  authenticateToken,
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET,
+  JWT_ACCESS_EXPIRATION_TIME,
+  JWT_REFRESH_EXPIRATION_TIME,
+};
