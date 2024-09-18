@@ -22,12 +22,14 @@ router.post("/getDoneTodo", todoController.getDoneTodo);
 // 클릭한 날짜의 todo 반환
 router.post("/showTodo", todoController.showTodo);
 // 오늘 todo status 'completed'로 업데이트
-router.put("/updateStatusCompleted", todoController.updateStatusCompleted);
+router.put("/updateStatusCompleted/:id", todoController.updateStatusCompleted);
 // 오늘 todo status 'Pending'로 업데이트
-router.put("/updateStatusPending", todoController.updateStatusPending);
+router.put("/updateStatusPending/:id", todoController.updateStatusPending);
 // 어제 status 'Pending'인 todo 오늘로 날짜 업데이트
 router.put("/StatusPendingYesterday", todoController.StatusPendingYesterday);
 // localStorage와 DB동기화
 router.get("/syncData", todoController.syncData);
+// AccessToken 전송
+router.get("/AccessToken", todoController.AccessToken);
 
 module.exports = router;

@@ -94,16 +94,11 @@ async function CreateToken(id, pw) {
     .then((response) => {
       if (!response.ok) {
         throw new Error("Network response was not ok.");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.success == false) {
-        console.log(data.message);
-      } else if (response.status === 200) {
+      } else if (response.status === 204) {
         window.location.href = "/";
       }
     })
+
     .catch((error) => {
       console.error(error);
     });
