@@ -1,4 +1,9 @@
+
+
 {
+  "name": "my-static-site",
+  "version": "1.0.0",
+  "description": "better-life deployed on Heroku",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
@@ -12,6 +17,6 @@
     "sortablejs": "^1.15.2"
   },
   "scripts": {
-    "start": "nodemon index"
+     "start": "node index"
   }
 }
