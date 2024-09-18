@@ -43,7 +43,8 @@ let toDos = storedToDos ? JSON.parse(storedToDos) : [monthDay()];
 function initialValue() {
   async function syncDataRun() {
     try {
-      StatusPendingYesterday();
+      await AccessToken();
+      await StatusPendingYesterday();
       await syncData();
 
       let monthArray = localStorage.getItem("monthCompletionRate");
@@ -172,6 +173,86 @@ nextMonthButton.addEventListener("click", () => changeMonth(1));
 // Initial render
 renderCalendar(currentYear, CalendarMonth);
 
+let todosToProcess = []; // 처리해야 할 Todo 목록 저장
+
+// 달력의 클릭된 날의 todo 출력
+
+// const calendarDatesElement = document.getElementById("calendar-dates");
+calendarDatesElement.addEventListener("click", async (e) => {
+  const TodoDate = document.querySelector(".Todo-date");
+
+  const monthYearElement = document.querySelector("#month-year");
+  clickYearMonth = monthYearElement.innerText;
+
+  const [year, month] = clickYearMonth.match(/\d+/g);
+  const formattedMonth = String(month).padStart(2, "0");
+  const calendarClickValue = e.target.innerText;
+  const clickDay = calendarClickValue.padStart(2, "0");
+
+  const formattedDate = new Date(`${year}-${formattedMonth}-${clickDay}`);
+
+  let clickDateTodos = await showTodo(formattedDate);
+
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  const dayOfWeek = days[new Date(formattedDate).getDay()];
+
+  TodoDate.innerText = `${month}/${calendarClickValue}(${dayOfWeek})`;
+
+  let newTodo = `
+  <div style="opacity: 0;height: 0.1px;" class="Todo-box item" >
+      <div class="Todo-container" >
+          <div class="Todo-CheckBox Todo-CheckBox-color"></div>
+          <h6 class="Todo-text line-through">크기 고정용</h6>
+        
+          <span class="Todo-remove-button">X</span>
+      </div>
+      <h6 type="text" class="input" > </h6>   
+  </div>
+
+      `;
+
+  if (clickDateTodos && clickDateTodos.length === 0) {
+    alert(`${formattedDate}의 todo가 없습니다.`);
+    document.querySelectorAll(".Todo-box ").forEach((container) => {
+      container.remove();
+    });
+
+    Todo_Group.innerHTML += newTodo;
+  } else if (clickDateTodos === null || clickDateTodos === undefined) {
+    alert("배열이 null 또는 undefined입니다.");
+  } else {
+    document.querySelectorAll(".Todo-box ").forEach((container) => {
+      container.remove();
+    });
+
+    Todo_Group.innerHTML += newTodo;
+
+    let index = 0;
+    const delay = 100;
+    const intervalId = setInterval(() => {
+      if (index >= clickDateTodos.length) {
+        clearInterval(intervalId); // 모든 요소가 처리되면 인터벌을 클리어
+        return;
+      }
+
+      createToDo(clickDateTodos[index]);
+
+      index++;
+    }, delay);
+    console.log("todosToProcess값 보자 : ", todosToProcess);
+    const opacity = setInterval(() => {
+      if (index >= todosToProcess.length) {
+        clearInterval(opacity); // 모든 Todo 처리가 완료되면 인터벌 종료
+        return;
+      }
+
+      // 순차적으로 opacity 변경
+      todosToProcess[index].style.opacity = "1";
+      index++;
+    }, 100); // 100ms 간격으로 하나씩 처리
+  }
+});
+
 // 현재 날짜 출력
 function formatDate() {
   const date = new Date();
@@ -284,100 +365,6 @@ function dateComparison(newTodo) {
 dateComparison();
 setInterval(dateComparison, 600000);
 
-let todosToProcess = []; // 처리해야 할 Todo 목록 저장
-
-document.addEventListener("DOMContentLoaded", () => {
-  const calendarDatesElement = document.getElementById("calendar-dates");
-  calendarDatesElement.addEventListener("click", async (e) => {
-    const TodoDate = document.querySelector(".Todo-date");
-
-    const monthYearElement = document.querySelector("#month-year");
-    clickYearMonth = monthYearElement.innerText;
-
-    const [year, month] = clickYearMonth.match(/\d+/g);
-    const formattedMonth = String(month).padStart(2, "0");
-    const calendarClickValue = e.target.innerText;
-    const clickDay = calendarClickValue.padStart(2, "0");
-
-    const formattedDate = new Date(`${year}-${formattedMonth}-${clickDay}`);
-    // console.log("formattedDate : ", formattedDate);
-    let clickDateTodos = await showTodo(formattedDate);
-    // console.log("clickDateTodos : ", clickDateTodos);
-
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    const dayOfWeek = days[new Date(formattedDate).getDay()];
-
-    // console.log("dayOfWeek", dayOfWeek);
-
-    TodoDate.innerText = `${month}/${calendarClickValue}(${dayOfWeek})`;
-
-    if (clickDateTodos && clickDateTodos.length === 0) {
-      alert(`${formattedDate}의 todo가 없습니다.`);
-      document.querySelectorAll(".Todo-box ").forEach((container) => {
-        container.remove();
-      });
-
-      let newTodo = `
-          <div style="opacity: 0;height: 0.1px;" class="Todo-box item" >
-              <div class="Todo-container" >
-                  <div class="Todo-CheckBox Todo-CheckBox-color"></div>
-                  <h6 class="Todo-text line-through">무쉰 내용이고~</h6>
-                
-                  <span class="Todo-remove-button">X</span>
-              </div>
-              <h6 type="text" class="input" > </h6>   
-          </div>
-        
-              `;
-      Todo_Group.innerHTML += newTodo;
-    } else if (clickDateTodos === null || clickDateTodos === undefined) {
-      alert("배열이 null 또는 undefined입니다.");
-    } else {
-      document.querySelectorAll(".Todo-box ").forEach((container) => {
-        container.remove();
-      });
-
-      let newTodo = `
-          <div style="opacity: 0;height: 0.1px;" class="Todo-box item" >
-              <div class="Todo-container" >
-                  <div class="Todo-CheckBox Todo-CheckBox-color"></div>
-                  <h6 class="Todo-text line-through">무쉰 내용이고~</h6>
-                
-                  <span class="Todo-remove-button">X</span>
-              </div>
-              <h6 type="text" class="input" > </h6>   
-          </div>
-        
-              `;
-      Todo_Group.innerHTML += newTodo;
-
-      let index = 0;
-      const delay = 100;
-      const intervalId = setInterval(() => {
-        if (index >= clickDateTodos.length) {
-          clearInterval(intervalId); // 모든 요소가 처리되면 인터벌을 클리어
-          return;
-        }
-
-        createToDo(clickDateTodos[index]);
-
-        index++;
-      }, delay);
-      console.log("todosToProcess값 보자 : ", todosToProcess);
-      const opacity = setInterval(() => {
-        if (index >= todosToProcess.length) {
-          clearInterval(opacity); // 모든 Todo 처리가 완료되면 인터벌 종료
-          return;
-        }
-
-        // 순차적으로 opacity 변경
-        todosToProcess[index].style.opacity = "1";
-        index++;
-      }, 100); // 100ms 간격으로 하나씩 처리
-    }
-  });
-});
-
 async function showTodo(clickDate) {
   console.log(clickDate);
   try {
@@ -389,7 +376,7 @@ async function showTodo(clickDate) {
       headers: {
         "content-type": "application/json; charset=UTF-8",
       },
-      credentials: "include", // 쿠키를 포함한 요청
+      credentials: "include",
     });
 
     if (response.ok) {
@@ -409,6 +396,7 @@ async function AccessToken() {
   try {
     const response = await fetch(`/AccessToken/`, {
       method: "GET",
+      credentials: "include",
     });
     if (response.ok) {
       const AccessToken = await response.json();
@@ -422,8 +410,6 @@ async function AccessToken() {
     console.error("Error deleting todo:", error);
   }
 }
-
-// AccessToken();
 let index = 0;
 // Create
 function postData(newTodoObj, AccessTokenSave) {
@@ -431,13 +417,13 @@ function postData(newTodoObj, AccessTokenSave) {
   fetch("http://localhost:3000/register", {
     method: "POST",
     body: JSON.stringify({
-      ...newTodoObj, // 기존의 newTodoObj 내용 추가
-      AccessTokenSave, // AccessTokenSave 추가
+      newTodoObj,
+      AccessTokenSave,
     }),
     headers: {
       "content-type": "application/json; charset=UTF-8",
     },
-    credentials: "include", // 쿠키를 포함한 요청
+    credentials: "include",
   })
     .then((response) => {
       if (!response.ok) {
@@ -446,8 +432,13 @@ function postData(newTodoObj, AccessTokenSave) {
       return response.json(); // JSON 응답을 처리
     })
     .then((data) => {
+      console.log(data);
       const { newTodo, count, AccessToken } = data;
-      // 서버에서 반환된 JSON 데이터 처리
+
+      if (!AccessToken) {
+        alert("인증되지 않은 사용자입니다.");
+        return;
+      }
       console.log("AccessToken", AccessToken);
       AccessTokenSave = AccessToken;
 
@@ -548,19 +539,25 @@ async function DeleteData(todoId, AccessTokenSave) {
       headers: {
         "content-type": "application/json; charset=UTF-8",
       },
-      credentials: "include", // 쿠키를 포함한 요청
+      credentials: "include",
     });
 
     if (response.ok) {
       const data = await response.json();
-      // console.log("data", data);
+      console.log("data", data);
+
       const { count, AccessToken } = data;
-      // console.log("count, AccessToken", count, AccessToken);
+      if (!count || !AccessToken) {
+        alert("인증되지 않은 사용자입니다.");
+        return false;
+      }
+      console.log("count, AccessToken", count, AccessToken);
 
       currentTodo = count;
       AccessTokenSave = AccessToken;
       completionRate(count);
       console.log(`Todo with ID ${todoId} deleted successfully.`);
+      return AccessTokenSave;
     } else {
       throw new Error("Failed to delete todo.");
     }
@@ -570,11 +567,15 @@ async function DeleteData(todoId, AccessTokenSave) {
 }
 
 // todo 제거
-function TodoRemoveButton(e) {
+async function TodoRemoveButton(e) {
   if (e.target.classList.contains("Todo-remove-button")) {
     const todoContainer = e.target.closest(".Todo-container");
     const todoBox = e.target.closest(".Todo-box");
     if (todoContainer) {
+      // DB
+      const todoId = todoContainer.dataset.value;
+      let Data = await DeleteData(todoId, AccessTokenSave);
+      if (!Data) return;
       //화면
       todoBox.remove();
 
@@ -583,9 +584,6 @@ function TodoRemoveButton(e) {
       toDos = toDosGet.filter((toDo) => toDo.id !== todoContainer.id);
       localStorage.setItem(TODOS_KEY, JSON.stringify(toDos));
 
-      // DB
-      const todoId = todoContainer.dataset.value;
-      DeleteData(todoId, AccessTokenSave);
       // localStorage의 날짜 비교
     }
   }
@@ -616,6 +614,7 @@ async function updateTodo(todoId, update, AccessTokenSave) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ todoId, update, AccessTokenSave }),
+      credentials: "include",
     });
 
     const data = await response.json();
@@ -624,12 +623,10 @@ async function updateTodo(todoId, update, AccessTokenSave) {
     if (data) {
       AccessTokenSave = data;
       console.log(`newAccessToken : ${AccessTokenSave}`);
-
-      Todo_date.addEventListener("click", function () {
-        console.log("AccessTokenSave", AccessTokenSave);
-      });
+      return true;
     } else {
-      console.log("Failed to update todo: " + data.message);
+      alert("인증되지 않은 사용자입니다.");
+      return false;
     }
   } catch (error) {
     console.error("Error:", error);
@@ -637,7 +634,7 @@ async function updateTodo(todoId, update, AccessTokenSave) {
 }
 
 // Update localStorage
-function updatelocalStorage(todoId, update) {
+function updateLocalStorage(todoId, update) {
   // localStorage
   let localTodos = JSON.parse(localStorage.getItem(TODOS_KEY));
   if (localTodos) {
@@ -657,7 +654,7 @@ function updatelocalStorage(todoId, update) {
 // todo update UI
 // 1.<h6> 아래로 내려오는 애니메이션
 function toggle(e) {
-  console.log("toggle");
+  console.log("1.toggle");
 
   const TodoContainer = e.target.closest(".Todo-container");
   if (!TodoContainer) return;
@@ -706,14 +703,15 @@ function executeAfterDelay(h6, todoText, todoId) {
   h6.parentNode.appendChild(input);
 
   input.focus();
+  console.log("2.input을 생성해서 h6위치를 넣고 h6숨기고 그 자리에 input 삽입");
   setupEventListeners(input, todoText, h6, todoId);
 }
 
 // 3.blur,click,change,Enter 발생시 handleUpdate 호출
 function setupEventListeners(input, todoText, h6, todoId) {
-  console.log("input", input);
+  console.log("3.blur,click,change,Enter 발생시 handleUpdate 호출");
   const handleBlur = () => {
-    handleUpdate("blur", input, todoText, h6, todoId);
+    handleUpdate("blur", input, todoText, h6, todoId, handleClick);
     // blur가 발생하면 click 이벤트 리스너를 제거
     Todo_List.removeEventListener("click", toggle);
     setTimeout(() => {
@@ -722,16 +720,17 @@ function setupEventListeners(input, todoText, h6, todoId) {
   };
 
   const handleClick = () => {
-    handleUpdate("click", input, todoText, h6, todoId);
+    handleUpdate("click", input, todoText, h6, todoId, handleClick);
     // click이 발생하면 blur 이벤트 리스너를 제거
     input.removeEventListener("blur", handleBlur);
   };
 
   const handleChange = () => {
-    handleUpdate("change", input, todoText, h6, todoId);
+    handleUpdate("change", input, todoText, h6, todoId, handleClick);
   };
 
   // 이벤트 리스너 등록
+  // todoText.removeEventListener("click", handleClick);
   todoText.addEventListener("click", handleClick, { once: true });
   input.addEventListener("blur", handleBlur, { once: true });
   input.addEventListener("change", handleChange, { once: true });
@@ -740,7 +739,8 @@ function setupEventListeners(input, todoText, h6, todoId) {
     "keydown",
     (event) => {
       if (event.key === "Enter") {
-        input.blur();
+        // input.blur();
+        handleUpdate("Enter", input, todoText, h6, todoId, handleClick);
       }
     },
     { once: true }
@@ -749,71 +749,85 @@ function setupEventListeners(input, todoText, h6, todoId) {
 
 // 4.input제거 h6올리기
 let isUpdating = false;
-function handleUpdate(click, input, todoText, h6, todoId) {
+async function handleUpdate(click, input, todoText, h6, todoId, handleClick) {
+  console.log("4.input제거 h6올리기");
   if (isUpdating) return; // 중복 호출 방지
   isUpdating = true;
   let update = input.value;
-  console.log("updateTodo : ", update, "todoId : ", todoId);
-  updateTodo(todoId, update, AccessTokenSave);
-  updatelocalStorage(todoId, update);
-  // 입력 필드의 값을 todoText에 설정
-  todoText.textContent = update;
-  console.log("발생한 이벤트 : ", click);
-  input.remove();
+  console.log("click : ", click);
 
-  h6.classList.remove("visible-input");
-  h6.classList.add("hidden-input");
+  let dbUpdateTodo = await updateTodo(todoId, update, AccessTokenSave);
+  console.log("dbUpdateTodo : ", dbUpdateTodo);
 
-  console.log(isUpdating);
-  setTimeout(() => {
+  todoText.removeEventListener("click", handleClick);
+
+  if (!dbUpdateTodo) {
+    input.remove();
+    h6.classList.remove("visible-input");
+    h6.classList.add("hidden-input");
+    console.log(isUpdating);
+
     isUpdating = false;
-  }, 0);
+
+    console.log(isUpdating);
+    return;
+  } else {
+    updateLocalStorage(todoId, update);
+
+    // 입력 필드의 값을 todoText에 설정
+    todoText.textContent = update;
+    console.log("발생한 이벤트 : ", click);
+    input.remove();
+
+    h6.classList.remove("visible-input");
+    h6.classList.add("hidden-input");
+
+    console.log(isUpdating);
+    setTimeout(() => {
+      isUpdating = false;
+    }, 0);
+  }
 }
 
 // DB와 localStorage 그날의 todo동기화
 async function syncData() {
   try {
-    const response = await fetch("/syncData");
-    const serverData = await response.json();
-
-    // console.log(serverData);
-    if (!serverData || serverData.length === 0) {
-      console.log("작성된 todo가 없습니다.");
-      return;
-    }
-    serverData.unshift(monthDay());
-    localStorage.setItem(TODOS_KEY, JSON.stringify(serverData));
-    console.log(serverData);
-
-    document.querySelectorAll(".Todo-box ").forEach((container) => {
-      container.remove();
+    const response = await fetch("/syncData", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
     });
-    // let index = 0;
-    // let paresdToDo = serverData.slice(1);
 
-    // const intervalId = setInterval(() => {
-    //   if (index >= paresdToDo.length) {
-    //     clearInterval(intervalId);
+    if (response.ok) {
+      const serverData = await response.json();
+      console.log(serverData);
+      serverData.unshift(monthDay());
+      localStorage.setItem(TODOS_KEY, JSON.stringify(serverData));
+      // console.log(serverData);
 
-    //     return;
-    //   }
-    //   createToDo(paresdToDo[index]);
-
-    //   index++;
-    // }, 150);
-
-    // serverData.shift();
-    // console.log(serverData);
+      document.querySelectorAll(".Todo-box ").forEach((container) => {
+        container.remove();
+      });
+    } else if (!serverData || serverData.length === 0) {
+      console.log("작성된 todo가 없습니다.");
+    } else if (response.status === 404) {
+      // 404 오류에 대한 별도 처리
+      console.error("Todo not found");
+    } else if (response.status === 400) {
+      console.error("Invalid ID");
+    } else {
+      // 기타 오류 처리
+      throw new Error(`Failed to update status: ${response.statusText}`);
+    }
 
     console.log("localStorage와 DB 동기화 완료");
-
-    return serverData;
   } catch (error) {
     console.error("동기화 실패:", error);
   }
 }
 setInterval(syncData, 3600000);
-// syncData();
 
 // State Update ( Completed )
 async function updateStatusCompleted(id) {
@@ -828,6 +842,7 @@ async function updateStatusCompleted(id) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ AccessTokenSave }),
+        credentials: "include",
       }
     );
 
@@ -862,6 +877,7 @@ async function updateStatusPending(id) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ AccessTokenSave }),
+        credentials: "include",
       }
     );
 
@@ -881,6 +897,7 @@ async function updateStatusPending(id) {
 // 어제 완료되지 못한 todo 가져오기
 async function StatusPendingYesterday() {
   try {
+    console.log("StatusPendingYesterday :", AccessTokenSave);
     const response = await fetch(
       `http://localhost:3000/StatusPendingYesterday/`,
       {
@@ -889,6 +906,7 @@ async function StatusPendingYesterday() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ AccessTokenSave }),
+        credentials: "include",
       }
     );
 
@@ -907,6 +925,9 @@ async function StatusPendingYesterday() {
     console.error(error);
   }
 }
+setInterval(() => {
+  StatusPendingYesterday();
+}, 3600000);
 
 // Read (오늘 todo수 반환)
 async function getCurrentTodo() {
@@ -917,6 +938,7 @@ async function getCurrentTodo() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({}),
+      credentials: "include",
     });
 
     if (response.ok) {
@@ -976,6 +998,7 @@ async function getDoneTodo() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({}),
+      credentials: "include",
     });
 
     if (response.ok) {
@@ -1184,6 +1207,7 @@ function completionRateSaveDB(weeksArray) {
     headers: {
       "content-type": "application/json; charset=UTF-8",
     },
+    credentials: "include",
   })
     .then((response) => {
       if (!response.ok) {
