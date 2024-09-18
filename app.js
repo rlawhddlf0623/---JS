@@ -30,8 +30,6 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-global.AccessToken = null;
-
 app.use("/", todoRouter);
 app.use("/login", loginRoutes);
 app.use("/join_membership", join_membershipRoutes);
@@ -40,8 +38,6 @@ app.use("/join_membership", join_membershipRoutes);
 // const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET; // Refresh Token의 비밀 키
 // const JWT_ACCESS_EXPIRATION_TIME = process.env.JWT_ACCESS_EXPIRATION_TIME; // Access Token의 유효 기간 (1시간)
 // const JWT_REFRESH_EXPIRATION_TIME = process.env.JWT_REFRESH_EXPIRATION_TIME; // Refresh Token의 유효 기간 (14일)
-
-// let AccessTokenSave = 0;
 
 // function CreateAccessToken(id, JWT_ACCESS_SECRET, JWT_ACCESS_EXPIRATION_TIME) {
 //   const AccessToken = jwt.sign({ id }, JWT_ACCESS_SECRET, {
