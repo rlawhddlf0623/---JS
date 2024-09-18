@@ -16,8 +16,8 @@ const dotenv = require("dotenv").config();
 // const User = require("./model/User");
 // // const Todo = require("./model/Todo");
 // const Rate = require("./model/Rate");
-
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
+// const PORT = process.env.PORT;
 
 // cookie-parser를 웹에 추가
 // app.use(cookieParser());
@@ -640,6 +640,7 @@ let validCollectionName = 0;
 // });
 
 // 서버 시작
+
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
 });
