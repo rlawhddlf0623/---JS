@@ -5,12 +5,12 @@ const redisClient = require("../config/redis");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 
+const { setAccessToken, getAccessToken } = require("../models/tokenManager");
+const { setUserId, getUserId } = require("../models/userID");
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_ACCESS_EXPIRATION_TIME = process.env.JWT_ACCESS_EXPIRATION_TIME;
 const JWT_REFRESH_EXPIRATION_TIME = process.env.JWT_REFRESH_EXPIRATION_TIME;
-
-let AccessTokenSave = 0;
 
 // cookie-parser를 웹에 추가
 app.use(cookieParser());
@@ -20,7 +20,7 @@ function CreateAccessToken(id, JWT_ACCESS_SECRET, JWT_ACCESS_EXPIRATION_TIME) {
   const AccessToken = jwt.sign({ id }, JWT_ACCESS_SECRET, {
     expiresIn: JWT_ACCESS_EXPIRATION_TIME,
   });
-  AccessTokenSave = AccessToken;
+  setAccessToken(AccessToken);
   console.log("Access token 발행");
   return AccessToken;
 }
@@ -34,7 +34,7 @@ function CreateRefreshToken(
 ) {
   const RefreshToken = jwt.sign({ id }, JWT_REFRESH_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRATION_TIME,
-    issuer: "Better_Life", // 발급자 식별자
+    issuer: "Better_Life",
   });
   redisClient.set(
     // JSON.stringify({ id }),
@@ -46,9 +46,9 @@ function CreateRefreshToken(
 
   res.cookie(`${id}_RefreshToken`, RefreshToken, {
     httpOnly: true, // 자바스크립트에서 접근할 수 없도록 설정
-    secure: true, // HTTPS에서만 쿠키를 전송
+    // secure: true, // HTTPS에서만 쿠키를 전송
     sameSite: "Strict", // 크로스 사이트 요청에서 쿠키를 전송하지 않도록 설정
-    maxAge: 1209600000, // 쿠키의 유효 기간 (2주)
+    maxAge: 1209600000,
   });
 
   console.log("refresh token 발행");
@@ -58,6 +58,8 @@ function CreateRefreshToken(
 // Access token 보내기
 app.get("/AccessToken", async (req, res) => {
   try {
+    let AccessTokenSave = getAccessToken();
+
     console.log("AccessTokenSave", AccessTokenSave);
 
     res.status(200).json(AccessTokenSave);
@@ -68,11 +70,22 @@ app.get("/AccessToken", async (req, res) => {
 });
 
 // 인증 미들웨어
-async function authenticateToken(req, res, AccessTokenSave) {
+async function authenticateToken(req, res, AccessToken) {
+  let userID = getUserId();
   console.log("userID", userID);
+
+  let AccessTokenSave = AccessToken;
+  console.log("AccessTokenSave", AccessTokenSave);
+
   const cookieKey = `${userID}_RefreshToken`;
-  const RefreshToken = req.cookies[cookieKey];
-  console.log(`${userID}_RefreshToken`, RefreshToken);
+  const RefreshToken = req.cookies ? req.cookies[cookieKey] : undefined;
+
+  if (!RefreshToken) {
+    console.log("RefreshToken 쿠키가 존재하지 않습니다.");
+  } else {
+    console.log("RefreshToken: ", RefreshToken);
+  }
+
   if (AccessTokenSave) {
     jwt.verify(AccessTokenSave, JWT_ACCESS_SECRET, (err, user) => {
       if (err) {
@@ -84,18 +97,18 @@ async function authenticateToken(req, res, AccessTokenSave) {
       // next(); // 다음 미들웨어로 이동
     });
     console.log("AccessToken으로 인증되었습니다.");
-    return AccessTokenSave;
+    return true;
   } else {
     if (RefreshToken == null) {
       console.log("cookie에서 가져온 Refresh token이 존재하지 않습니다. ");
-      return;
+      return false;
     }
     console.log("cookie에서 가져온 Refresh token : ", RefreshToken);
 
     jwt.verify(RefreshToken, JWT_REFRESH_SECRET, (err, user) => {
       if (err) {
         console.log("cookie에서 가져온 Refresh token 형식X");
-        return;
+        return false;
       }
       // req.user = user; // 요청 객체에 사용자 정보 추가
       // console.log("Refresh token인증된 사용자 : ", user);
@@ -127,7 +140,7 @@ async function authenticateToken(req, res, AccessTokenSave) {
     );
     console.log("newRefreshToken : ", newRefreshToken);
 
-    return newAccessToken;
+    return true;
   }
 }
 
