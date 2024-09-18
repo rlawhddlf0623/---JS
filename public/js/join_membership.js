@@ -73,18 +73,18 @@ certifyNumber.addEventListener('input',function(){
 */
 
 // cookie에서 가져온값
-const cookies = document.cookie.split("; ");
-for (let i = 0; i < cookies.length; i++) {
-  const cookie = cookies[i].split("=");
-  if (cookie[0] === "randomNumber") {
-    const randomNumber = cookie[1];
-    console.log("인증번호:", randomNumber);
+// const cookies = document.cookie.split("; ");
+// for (let i = 0; i < cookies.length; i++) {
+//   const cookie = cookies[i].split("=");
+//   if (cookie[0] === "randomNumber") {
+//     const randomNumber = cookie[1];
+//     console.log("인증번호:", randomNumber);
 
-    if (certifyValuecertifyValue == randomNumber) {
-      alert("이메일 인증 성공");
-    }
-  }
-}
+//     if (certifyValuecertifyValue == randomNumber) {
+//       alert("이메일 인증 성공");
+//     }
+//   }
+// }
 
 document
   .getElementById("register")
@@ -96,7 +96,7 @@ document
     const email = document.getElementById("email").value;
     const name = document.getElementById("name").value;
 
-    fetch("http://localhost:3000/UserCollection", {
+    fetch("http://localhost:3000/join_membership/UserCollection", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -111,8 +111,7 @@ document
       })
       .then((data) => {
         console.log("Success:", data);
-        // 리다이렉트시 사용자 로그인된 상태로 넘겨주기
-        window.location.href = "./index.html";
+        window.location.href = "/";
       })
       .catch((error) => {
         console.error("Error:", error);
