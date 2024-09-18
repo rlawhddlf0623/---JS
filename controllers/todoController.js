@@ -3,6 +3,15 @@ const User = require("../models/User");
 // const Todo = require("./model/Todo");
 const Rate = require("../models/Rate");
 const auth = require("../middlewares/auth");
+const { setAccessToken, getAccessToken } = require("../models/tokenManager");
+
+const express = require("express");
+const app = express();
+// Body-parser middleware 설정
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
 const todoUserSchema = new mongoose.Schema({
   id: {
     type: String,
@@ -36,21 +45,18 @@ function TodayDate() {
 //todo 저장
 exports.register = async (req, res) => {
   try {
-    const { id, todo, AccessTokenSave } = req.body;
-    // console.log("req.body", req.body);
-    // const AccessTokenSave = req.body.AccessTokenSave;
+    const { AccessTokenSave, newTodoObj } = req.body;
+    // console.log("newTodoObj", newTodoObj);
     // console.log("AccessTokenSave : ", AccessTokenSave);
 
     let AccessToken = await auth.authenticateToken(req, res, AccessTokenSave);
+    if (!AccessToken) {
+      console.error("인증되지 않은 사용자입니다.");
+      res.status(200).json({ AccessToken });
+      return;
+    }
 
-    // if (!authenticate_Token) {
-    //   // authenticateToken안에서 응답을 보내고 있어 중복된 응답을 보내서 에러가 발생한다.
-    //   console.log("Refresh token 인증 에러");
-    //   return res.status(400).json({ error: "Access token Error" });
-    // }
-
-    // const { id, todo } = req.body;
-    if (!id || !todo) {
+    if (!newTodoObj.id || !newTodoObj.todo) {
       return res.status(400).json({ error: "ID and todo are required" });
     }
 
@@ -58,10 +64,12 @@ exports.register = async (req, res) => {
     // const TodoModel = CreateCollection(validCollectionName);
 
     const newTodo = new TodoModel({
-      id,
-      todo,
+      id: newTodoObj.id,
+      todo: newTodoObj.todo,
     });
     await newTodo.save();
+
+    console.log("newTodo :  ", newTodo);
 
     let [startOfDay, endOfDay] = TodayDate();
     // 오늘의 todos를 조회
@@ -77,17 +85,22 @@ exports.register = async (req, res) => {
 };
 
 //todo 삭제
-//   app.delete("/register/:todoId",
 exports.registerTodoId = async (req, res) => {
   const { todoId, AccessTokenSave } = req.body;
 
   // Access token 인증
   let AccessToken = await auth.authenticateToken(req, res, AccessTokenSave);
 
+  if (!AccessToken) {
+    console.error("인증되지 않은 사용자입니다.");
+    const count = null;
+    res.status(200).json({ count, AccessToken });
+    return;
+  }
   try {
     // const TodoModel = CreateCollection(validCollectionName);
     const deletedTodo = await TodoModel.findByIdAndDelete(todoId);
-    // console.log("deletedTodo", deletedTodo);
+    console.log("deletedTodo", deletedTodo);
 
     let [startOfDay, endOfDay] = TodayDate();
     if (deletedTodo) {
@@ -107,16 +120,22 @@ exports.registerTodoId = async (req, res) => {
   }
 };
 
-//Update app.put("/Update
 exports.Update = async (req, res) => {
   const { todoId, update, AccessTokenSave } = req.body;
-
-  // Access token 인증
-  let newAccessToken = await auth.authenticateToken(req, res, AccessTokenSave);
-  console.log("Update의 newAccessToken", newAccessToken);
   if (!todoId || !update) {
     return res.status(400).json({ success: false, message: "Invalid data" });
   }
+  // Access token 인증
+  let newAccessToken = await auth.authenticateToken(req, res, AccessTokenSave);
+  console.log("Update의 newAccessToken", newAccessToken);
+
+  if (!newAccessToken) {
+    console.error("인증되지 않은 사용자입니다.");
+    const token = null;
+    res.status(200).json(token);
+    return;
+  }
+
   console.log("todoId ,update", todoId, update);
   try {
     // const TodoModel = CreateCollection(validCollectionName);
@@ -132,14 +151,13 @@ exports.Update = async (req, res) => {
         .json({ success: false, message: "Todo not found" });
     }
 
-    res.json({ newAccessToken });
+    res.json(newAccessToken);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ success: false, message: "An error occurred" });
   }
 };
 
-//  app.post("/completionRateSaveDB",
 exports.completionRateSaveDB = async (req, res) => {
   const { weeksArray, AccessTokenSave } = req.body;
   // console.log(weeksArray, AccessTokenSave);
@@ -190,7 +208,7 @@ exports.completionRateSaveDB = async (req, res) => {
   }
 };
 
-// Read (현재 todo수 반환) : app.post("/getCurrentTodo"
+// Read (현재 todo수 반환)
 exports.getCurrentTodo = async (req, res) => {
   try {
     let [start, end] = TodayDate();
@@ -205,7 +223,6 @@ exports.getCurrentTodo = async (req, res) => {
     res.status(500).send("Error counting documents");
   }
 };
-//   app.post("/showTodo",
 
 exports.showTodo = async (req, res) => {
   try {
@@ -231,7 +248,7 @@ exports.showTodo = async (req, res) => {
     res.status(500).send("Error counting documents");
   }
 };
-//   app.post("/getDoneTodo",
+
 exports.getDoneTodo = async (req, res) => {
   try {
     // const TodoModel = CreateCollection(validCollectionName);
@@ -248,11 +265,11 @@ exports.getDoneTodo = async (req, res) => {
   }
 };
 
-// status 'completed'로 업데이트하는 엔드포인트 :app.put("/updateStatusCompleted/:id",
+// status 'completed'로 업데이트하는 엔드포인트
 exports.updateStatusCompleted = async (req, res) => {
   try {
     const { id } = req.params;
-    const AccessTokenSave = req.AccessTokenSave;
+    const AccessTokenSave = req.body.AccessTokenSave;
     let newAccessToken = await auth.authenticateToken(
       req,
       res,
@@ -283,12 +300,12 @@ exports.updateStatusCompleted = async (req, res) => {
     res.status(500).send("Error updating status");
   }
 };
-// status 'Pending'로 업데이트하는 엔드포인트 :app.put("/updateStatusPending/:id",
+// status 'Pending'로 업데이트하는 엔드포인트
 exports.updateStatusPending = async (req, res) => {
   try {
     const { id } = req.params;
     // const TodoModel = CreateCollection(validCollectionName);
-    const AccessTokenSave = req.AccessTokenSave;
+    const AccessTokenSave = req.body.AccessTokenSave;
     let newAccessToken = await auth.authenticateToken(
       req,
       res,
@@ -311,7 +328,7 @@ exports.updateStatusPending = async (req, res) => {
     res.status(500).send("Error updating status");
   }
 };
-//   app.put("/StatusPendingYesterday/",
+// 어제 못한 todo 오늘로 이동
 exports.StatusPendingYesterday = async (req, res) => {
   // 하루 전 날짜 계산
   const oneDayAgo = new Date();
@@ -327,7 +344,8 @@ exports.StatusPendingYesterday = async (req, res) => {
   const currentDate = new Date();
   console.log("currentDate", currentDate);
   try {
-    const AccessTokenSave = req.AccessTokenSave;
+    const AccessTokenSave = req.body.AccessTokenSave;
+    console.log("StatusPendingYesterday의 AccessTokenSave : ", AccessTokenSave);
     let newAccessToken = await auth.authenticateToken(
       req,
       res,
@@ -336,25 +354,17 @@ exports.StatusPendingYesterday = async (req, res) => {
 
     const result = await TodoModel.updateMany(
       {
-        status: "pending", // 상태가 "pending"인 항목
+        status: "pending",
         date: {
-          $gte: startOfDay, // 해당 날짜의 시작 시간
-          $lte: endOfDay, // 해당 날짜의 끝 시간
+          $gte: startOfDay,
+          $lte: endOfDay,
         },
       },
       {
-        $set: { date: currentDate }, // date를 현재 날짜로 업데이트
+        $set: { date: currentDate },
       }
     );
-
-    const yesterdayTodo = await TodoModel.find({
-      status: "pending", // 상태가 "pending"인 항목
-      date: {
-        $gte: startOfDay, // 해당 날짜의 시작 시간
-        $lte: endOfDay, // 해당 날짜의 끝 시간
-      },
-    });
-    console.log("yesterdayTodo", yesterdayTodo);
+    console.log("result", result);
 
     if (result) {
       console.log(`어제의 todo 이동완료`);
@@ -369,22 +379,34 @@ exports.StatusPendingYesterday = async (req, res) => {
   }
 };
 
-// localStorage와 DB동기화 : app.get("/syncData",
+// Access token 보내기
+exports.AccessToken = async (req, res) => {
+  try {
+    let AccessTokenSave = getAccessToken();
+    console.log("getAccessToken()", getAccessToken());
+    console.log("AccessToken ", AccessTokenSave);
+
+    res.status(200).json(AccessTokenSave);
+  } catch (err) {
+    res.status(500).send("Error AccessTokenSave");
+    console.log("err:", err);
+  }
+};
+
+// localStorage와 DB동기화
 exports.syncData = async (req, res) => {
   try {
     // 현재 날짜를 기준으로 할 때, 날짜를 문자열로 변환
     let [startOfDay, endOfDay] = TodayDate();
     // const TodoModel = CreateCollection(validCollectionName);
-    // 현재 날짜의 todos를 조회
+
     // console.log(startOfDay, endOfDay);
     const todos = await TodoModel.find({
       date: { $gte: startOfDay, $lte: endOfDay },
     });
+    console.log("syncData의todos : ", todos);
 
-    // 클라이언트에 데이터 전송
-    // console.log("현재 날짜의 todos", todos);
     res.status(200).json(todos);
-    // res.json(todos);
   } catch (error) {
     console.error("Error fetching todos:", error);
     res.status(500).json({ message: "Internal Server Error" });
