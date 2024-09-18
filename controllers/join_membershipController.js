@@ -1,4 +1,14 @@
-let validCollectionName = 0;
+const User = require("../models/User");
+const {
+  CreateAccessToken,
+  CreateRefreshToken,
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET,
+  JWT_ACCESS_EXPIRATION_TIME,
+  JWT_REFRESH_EXPIRATION_TIME,
+} = require("../middlewares/auth");
+const { setUserId, getUserId } = require("../models/userID");
+// let validCollectionName = 0;
 // 회원정보 저장 + 사용자id로 todo collection만들기 : app.post("/UserCollection",
 exports.UserCollection = async (req, res) => {
   const { id, pw, email, name } = req.body;
@@ -10,7 +20,6 @@ exports.UserCollection = async (req, res) => {
   }
 
   try {
-    // 사용자 입력 이메일과 동일한 이메일을 가진 문서를 찾습니다.
     const existingUser = await User.findOne({ email: email });
 
     if (existingUser) {
@@ -18,11 +27,28 @@ exports.UserCollection = async (req, res) => {
       return res.status(400).json({ error: "Email already exists" });
     } else {
       console.log("사용할 수 있는 이메일입니다.");
-      //users에 저장
+
       const newUser = new User({ id, pw, email, name });
       await newUser.save();
 
-      validCollectionName = id.replace(/[^a-zA-Z0-9]/g, "");
+      let AccessToken = CreateAccessToken(
+        id,
+        JWT_ACCESS_SECRET,
+        JWT_ACCESS_EXPIRATION_TIME
+      );
+      console.log("AccessToken : ", AccessToken);
+
+      let RefreshToken = CreateRefreshToken(
+        id,
+        JWT_REFRESH_SECRET,
+        JWT_REFRESH_EXPIRATION_TIME,
+        res
+      );
+      console.log("RefreshToken : ", RefreshToken);
+
+      setUserId(id);
+
+      // validCollectionName = id.replace(/[^a-zA-Z0-9]/g, "");
       // console.log("validCollectionName(회원가입): ", validCollectionName);
       // 사용자id로 collection만들기( collection 만들때 document 1개는 필수로 생성 )
       // const TodoModel = CreateCollection(validCollectionName);

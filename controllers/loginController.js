@@ -8,15 +8,14 @@ const {
   JWT_ACCESS_EXPIRATION_TIME,
   JWT_REFRESH_EXPIRATION_TIME,
 } = require("../middlewares/auth");
+const { setUserId, getUserId } = require("../models/userID");
 
-// 로그인 인증 : app.post("/login",
-let userID = 0;
 exports.userLogin = async (req, res) => {
   const { id, pw } = req.body;
   if (!id || !pw) {
     return res.status(400).json({ error: "id and pw are required" });
   }
-  userID = id;
+
   console.log("id, pw", id, pw);
   try {
     // 1.DB에서 사용자 확인
@@ -51,8 +50,9 @@ exports.userLogin = async (req, res) => {
     );
     console.log("RefreshToken : ", RefreshToken);
 
-    global.AccessToken = AccessToken;
-    res.status(200).send();
+    setUserId(id);
+
+    res.status(204).send();
   } catch (err) {
     res.status(500).send("token can't make it");
     console.log("err:", err);
