@@ -3,11 +3,12 @@ const app = express();
 
 app.use(express.static('build'));
 
+const PORT = process.env.PORT || 3000;
 
 app.get('/',function(req,res){
     res.sendFile(__dirname +'/build/index.html')
 })
 
-app.listen(3000, () => {
-    console.log(`Server is running on 3000`);
+app.listen(PORT, () => {
+    console.log(`Server is running on ${PORT}`);
   });
