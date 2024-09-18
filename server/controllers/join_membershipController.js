@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const User = require("../server/routes/models/User");
 const {
   CreateAccessToken,
   CreateRefreshToken,
@@ -7,7 +7,7 @@ const {
   JWT_ACCESS_EXPIRATION_TIME,
   JWT_REFRESH_EXPIRATION_TIME,
 } = require("../middlewares/auth");
-const { setUserId, getUserId } = require("../models/userID");
+const { setUserId, getUserId } = require("../server/routes/models/userID");
 // let validCollectionName = 0;
 // 회원정보 저장 + 사용자id로 todo collection만들기 : app.post("/UserCollection",
 exports.UserCollection = async (req, res) => {

@@ -1,9 +1,12 @@
 const mongoose = require("../config/mongo");
-const User = require("../models/User");
+const User = require("../server/routes/models/User");
 // const Todo = require("./model/Todo");
-const Rate = require("../models/Rate");
+const Rate = require("../server/routes/models/Rate");
 const auth = require("../middlewares/auth");
-const { setAccessToken, getAccessToken } = require("../models/tokenManager");
+const {
+  setAccessToken,
+  getAccessToken,
+} = require("../server/routes/models/tokenManager");
 
 const express = require("express");
 const app = express();

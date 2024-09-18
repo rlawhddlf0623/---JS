@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const User = require("../server/routes/models/User");
 const bcrypt = require("bcrypt");
 const {
   CreateAccessToken,
@@ -8,7 +8,7 @@ const {
   JWT_ACCESS_EXPIRATION_TIME,
   JWT_REFRESH_EXPIRATION_TIME,
 } = require("../middlewares/auth");
-const { setUserId, getUserId } = require("../models/userID");
+const { setUserId, getUserId } = require("../server/routes/models/userID");
 
 exports.userLogin = async (req, res) => {
   const { id, pw } = req.body;

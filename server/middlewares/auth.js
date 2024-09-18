@@ -5,8 +5,11 @@ const redisClient = require("../config/redis");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 
-const { setAccessToken, getAccessToken } = require("../models/tokenManager");
-const { setUserId, getUserId } = require("../models/userID");
+const {
+  setAccessToken,
+  getAccessToken,
+} = require("../server/routes/models/tokenManager");
+const { setUserId, getUserId } = require("../server/routes/models/userID");
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_ACCESS_EXPIRATION_TIME = process.env.JWT_ACCESS_EXPIRATION_TIME;
